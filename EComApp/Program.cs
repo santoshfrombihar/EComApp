@@ -1,5 +1,7 @@
 
 using EComApp.AppDbContext;
+using EComApp.Services.Implementation;
+using EComApp.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace EComApp
@@ -14,6 +16,7 @@ namespace EComApp
 
             builder.Services.AddControllers()
             .AddJsonOptions(options => { options.JsonSerializerOptions.PropertyNamingPolicy = null; });
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<EComDbContext>(options =>
