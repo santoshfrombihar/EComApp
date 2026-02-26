@@ -15,7 +15,7 @@ namespace EComApp.Controllers
         }
 
         
-        [HttpPost("register")]
+        [HttpPost("registercustomer")]
         public async Task<ActionResult<ApiResponse<CustomerResponseDTO>>> RegisterCustomer([FromBody] CustomerRegistrationDTO customerRegistration)
         {
             var response = await _customerService.RegisterCustomer(customerRegistration);
@@ -25,5 +25,14 @@ namespace EComApp.Controllers
             }
             return Ok(response);
         }
+
+        [HttpPut("updatecustomer")]
+        public async Task<ActionResult<ApiResponse<CustomerResponseDTO>>> UpdateCustomerDetails([FromBody] CustomerUpdateDTO customerUpdate)
+        {
+            var response = await _customerService.UpdateCustomerDetails(customerUpdate);
+            return StatusCode(response.StatusCode, response);
+        }
+
+
     }
 }

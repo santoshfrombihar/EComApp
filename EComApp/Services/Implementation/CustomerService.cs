@@ -1,7 +1,9 @@
-﻿using EComApp.AppDbContext;
+﻿using Azure;
+using EComApp.AppDbContext;
 using EComApp.DTOs;
 using EComApp.Models;
 using EComApp.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
@@ -38,6 +40,7 @@ namespace EComApp.Services.Implementation
                 return new ApiResponse<LoginResponseDTO>(500, "Internal Server Error");
             }
         }
+
 
         public async Task<ApiResponse<CustomerResponseDTO>> RegisterCustomer(CustomerRegistrationDTO registerCustomer)
         {
@@ -78,14 +81,91 @@ namespace EComApp.Services.Implementation
             }
         }
 
-        public Task<ApiResponse<CustomerResponseDTO>> UpdateCustomerDetails(CustomerUpdateDTO customerUpdate)
+        public async Task<ApiResponse<CustomerResponseDTO>> UpdateCustomerDetails(CustomerUpdateDTO customerUpdate)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var user = await _eComDbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerUpdate.CustomerId);
+                if(user == null)
+                {
+                    return new ApiResponse<CustomerResponseDTO>(404, "User not found");
+                }
+                user.FirstName = customerUpdate.FirstName;
+                user.MiddleName = customerUpdate.MiddleName;
+                user.LastName = customerUpdate.LastName;
+                user.PhoneNumber = customerUpdate.Phone;
+                user.Email = customerUpdate.Email;
+                user.DateOfBirth = customerUpdate.DateOfBirth;
+
+                await _eComDbContext.SaveChangesAsync();
+
+                var response = new CustomerResponseDTO
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Phone = user.PhoneNumber
+
+                };
+
+                return new ApiResponse<CustomerResponseDTO>(200,response);
+
+            }
+            catch(Exception e)
+            {
+                return new ApiResponse<CustomerResponseDTO>(500, "Internal Server Error");
+            }
         }
 
-        public Task<ApiResponse<CustomerResponseDTO>> UpdatePassword(ChangePasswordDTO changePassword)
+        public async Task<ApiResponse<ConfirmationResponse>> UpdatePassword(ChangePasswordDTO changePassword)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var user = await _eComDbContext.Customers.FirstOrDefaultAsync(c => c.Id == changePassword.CustomerId && c.Password == changePassword.CurrentPassword);
+                if (user == null)
+                {
+                    return new ApiResponse<ConfirmationResponse>(404, "User not found");
+                }
+                user.Password = changePassword.NewPassword;
+                await _eComDbContext.SaveChangesAsync();
+                var res = new ConfirmationResponse
+                {
+                    Message = "Password updated sucessfully"
+                };
+                return new ApiResponse<ConfirmationResponse>(204, res);
+            }
+            catch(Exception e)
+            {
+                return new ApiResponse<ConfirmationResponse>(500, "Internal Server Error");
+            }
+        }
+        public async Task<ApiResponse<CustomerResponseDTO>> GetCustomerDetails(int customerId)
+        {
+            try
+            {
+                var user = await _eComDbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId);
+                if (user == null)
+                {
+                    return new ApiResponse<CustomerResponseDTO>(404, "User not found");
+                }
+                var response = new CustomerResponseDTO
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    MiddleName = user.MiddleName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Phone = user.PhoneNumber,
+                    DateOfBirth = user.DateOfBirth
+                };
+                return new ApiResponse<CustomerResponseDTO>(200,response);
+            }
+            catch(Exception e)
+            {
+                return new ApiResponse<CustomerResponseDTO>(500, "Internal Server Error");
+            }
+            
         }
     }
 }

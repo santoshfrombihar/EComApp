@@ -4,6 +4,7 @@ namespace EComApp.DTOs
 {
     public class CustomerUpdateDTO
     {
+        [Required(ErrorMessage = "CustomerId is required")]
         public int CustomerId { get; set; }
 
         [Required(ErrorMessage = "First Name is required")]
